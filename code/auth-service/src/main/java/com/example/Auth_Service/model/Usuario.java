@@ -1,23 +1,29 @@
 package com.example.Auth_Service.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
-@Entity 
+@Entity
+@Table(name = "usuario")
 public class Usuario {
-    @Id 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
-    private String rol;
- 
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Rol rol;
+
+    @Column(nullable = false)
     private boolean activo;
 
-    public Usuario(){
+    public Usuario() {
     }
 
     public Long getId() {
@@ -44,11 +50,11 @@ public class Usuario {
         this.password = password;
     }
 
-    public String getRol() {
+    public Rol getRol() {
         return rol;
     }
 
-    public void setRol(String rol) {
+    public void setRol(Rol rol) {
         this.rol = rol;
     }
 
@@ -59,7 +65,4 @@ public class Usuario {
     public void setActivo(boolean activo) {
         this.activo = activo;
     }
-
-
-
 }

@@ -1,0 +1,13 @@
+package com.example.Scouting_Service;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ScoutingServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(ScoutingServiceApplication.class, args);
+	}
+
+}

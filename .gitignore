@@ -14,7 +14,7 @@ hs_err_pid*
 *.log
 logs/
 *.tmp
-*.swp
+*.swp 
 *~
 
 # Archivos del sistema operativo

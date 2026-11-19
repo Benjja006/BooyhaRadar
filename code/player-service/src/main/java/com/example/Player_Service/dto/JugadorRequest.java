@@ -11,6 +11,9 @@ import tools.jackson.databind.annotation.JsonDeserialize;
 
 public class JugadorRequest {
 
+    @NotNull(message = "El ID de la cuenta es obligatorio")
+    private Long usuarioId;
+
     @JsonDeserialize(using = StrictStringDeserializer.class)
     @NotBlank(message = "El nickname es obligatorio")
     private String nickname;
@@ -55,6 +58,14 @@ public class JugadorRequest {
 
     public String getNickname() {
         return nickname;
+    }
+
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
     public void setNickname(String nickname) {

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -27,6 +26,11 @@ public class EstadisticaService {
     }
 
     public Estadistica crear(Estadistica estadistica) {
+        if (estadisticaRepository.existsByJugadorId(estadistica.getJugadorId())) {
+            throw new IllegalArgumentException(
+                    "El jugador ya tiene estadísticas registradas");
+        }
+
         estadistica.setId(null);
         estadistica.setFechaActualizacion(LocalDateTime.now());
 
@@ -69,12 +73,6 @@ public class EstadisticaService {
                                 "El jugador no tiene estadísticas registradas"));
 
         LocalDateTime ahora = LocalDateTime.now();
-
-        if (actual.getFechaActualizacion()
-                .plusDays(7).isAfter(ahora)) {
-            throw new IllegalStateException(
-                    "Las estadísticas solo se pueden actualizar cada 7 días");
-        }
 
         // Guardar una copia de las estadísticas anteriores.
         HistorialEstadistica historial = new HistorialEstadistica();

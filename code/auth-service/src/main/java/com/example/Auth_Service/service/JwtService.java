@@ -17,12 +17,13 @@ public class JwtService {
         this.jwtEncoder = jwtEncoder;
     }
 
-    public String generarToken(String email, String rol) {
+    public String generarToken(Long usuarioId, String email, String rol) {
 
         Instant ahora = Instant.now();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .subject(email)
+                .claim("usuarioId", usuarioId)
                 .claim("rol", rol)
                 .issuedAt(ahora)
                 .expiresAt(ahora.plus(2, ChronoUnit.HOURS))

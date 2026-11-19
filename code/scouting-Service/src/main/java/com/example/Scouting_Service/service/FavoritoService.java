@@ -2,6 +2,7 @@ package com.example.Scouting_Service.service;
 
 import com.example.Scouting_Service.model.Favorito;
 import com.example.Scouting_Service.repository.FavoritoRepository;
+import com.example.Scouting_Service.client.JugadorClient;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,15 +11,23 @@ import java.util.List;
 public class FavoritoService {
 
     private final FavoritoRepository favoritoRepository;
+    private final JugadorClient jugadorClient;
 
-    public FavoritoService(FavoritoRepository favoritoRepository) {
+    public FavoritoService(
+            FavoritoRepository favoritoRepository,
+            JugadorClient jugadorClient) {
         this.favoritoRepository = favoritoRepository;
+        this.jugadorClient = jugadorClient;
     }
 
     public Favorito agregar(Long usuarioId, Long jugadorId) {
         if (usuarioId == null || jugadorId == null) {
             throw new IllegalArgumentException(
                     "El ID del usuario y del jugador son obligatorios");
+        }
+
+        if (!jugadorClient.existeJugador(jugadorId)) {
+            throw new IllegalArgumentException("No se encontró el jugador");
         }
 
         if (favoritoRepository.existsByUsuarioIdAndJugadorId(

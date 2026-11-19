@@ -12,6 +12,8 @@ public interface EstadisticaRepository
 
     List<Estadistica> findByJugadorId(Long jugadorId);
 
+    boolean existsByJugadorId(Long jugadorId);
+
     Optional<Estadistica> findFirstByJugadorIdOrderByFechaActualizacionDesc(
             Long jugadorId);
 }

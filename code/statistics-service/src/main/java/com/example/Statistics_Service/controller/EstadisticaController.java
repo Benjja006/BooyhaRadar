@@ -92,10 +92,9 @@ public class EstadisticaController {
         return ResponseEntity.noContent().build();
     }
 
-    // Manejar actualizaciones rechazadas por la regla de los 7 días
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<String> manejarActualizacionRechazada(
-            IllegalStateException excepcion) {
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> manejarSolicitudInvalida(
+            IllegalArgumentException excepcion) {
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(excepcion.getMessage());

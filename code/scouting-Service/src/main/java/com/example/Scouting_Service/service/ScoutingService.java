@@ -1,6 +1,7 @@
 package com.example.Scouting_Service.service;
 
 import com.example.Scouting_Service.client.JugadorClient;
+import com.example.Scouting_Service.client.EstadisticaClient;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,9 +13,13 @@ import java.util.Map;
 public class ScoutingService {
 
     private final JugadorClient jugadorClient;
+    private final EstadisticaClient estadisticaClient;
 
-    public ScoutingService(JugadorClient jugadorClient) {
+    public ScoutingService(
+            JugadorClient jugadorClient,
+            EstadisticaClient estadisticaClient) {
         this.jugadorClient = jugadorClient;
+        this.estadisticaClient = estadisticaClient;
     }
 
     public List<Map<String, Object>> buscarJugadores(
@@ -22,7 +27,10 @@ public class ScoutingService {
             Integer edadMinima,
             Integer edadMaxima,
             String rol,
-            String experiencia) {
+            String experiencia,
+            Double kdMinimo,
+            Double danoMinimo,
+            Integer partidasMinimas) {
 
         List<Map<String, Object>> jugadores =
                 jugadorClient.listarJugadores();
@@ -35,7 +43,43 @@ public class ScoutingService {
                         j.get("rolPrincipal"), j.get("rolSecundario"), rol))
                 .filter(j -> coincideTexto(
                         j.get("experienciaCompetitiva"), experiencia))
+                .filter(j -> coincideEstadisticas(
+                        j, kdMinimo, danoMinimo, partidasMinimas))
                 .toList();
+    }
+
+    private boolean coincideEstadisticas(
+            Map<String, Object> jugador,
+            Double kdMinimo,
+            Double danoMinimo,
+            Integer partidasMinimas) {
+
+        if (kdMinimo == null && danoMinimo == null && partidasMinimas == null) {
+            return true;
+        }
+
+        Object id = jugador.get("id");
+        if (id == null) {
+            return false;
+        }
+
+        List<Map<String, Object>> estadisticas =
+                estadisticaClient.buscarPorJugador(Long.valueOf(id.toString()));
+
+        return estadisticas.stream().anyMatch(e ->
+                cumpleMinimo(e.get("kd"), kdMinimo)
+                        && cumpleMinimo(e.get("danoPromedio"), danoMinimo)
+                        && cumpleMinimo(e.get("partidasJugadas"), partidasMinimas));
+    }
+
+    private boolean cumpleMinimo(Object valor, Number minimo) {
+        if (minimo == null) {
+            return true;
+        }
+        if (!(valor instanceof Number numero)) {
+            return false;
+        }
+        return numero.doubleValue() >= minimo.doubleValue();
     }
 
     private boolean coincideTexto(Object valor, String filtro) {

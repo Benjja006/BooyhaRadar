@@ -11,6 +11,9 @@ public class Jugador {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    private Long usuarioId;
+
     @Column(nullable = false, unique = true)
     private String nickname;
 
@@ -50,6 +53,14 @@ public class Jugador {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
     public String getNickname() {

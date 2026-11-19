@@ -22,9 +22,13 @@ public class ScoutingController {
             @RequestParam(required = false) Integer edadMinima,
             @RequestParam(required = false) Integer edadMaxima,
             @RequestParam(required = false) String rol,
-            @RequestParam(required = false) String experiencia) {
+            @RequestParam(required = false) String experiencia,
+            @RequestParam(required = false) Double kdMinimo,
+            @RequestParam(required = false) Double danoMinimo,
+            @RequestParam(required = false) Integer partidasMinimas) {
 
         return scoutingService.buscarJugadores(
-                pais, edadMinima, edadMaxima, rol, experiencia);
+                pais, edadMinima, edadMaxima, rol, experiencia,
+                kdMinimo, danoMinimo, partidasMinimas);
     }
 }

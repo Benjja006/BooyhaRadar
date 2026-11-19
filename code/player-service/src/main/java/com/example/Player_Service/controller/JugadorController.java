@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import com.example.Player_Service.dto.JugadorRequest;
@@ -49,6 +50,14 @@ import jakarta.validation.Valid;
         );
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Jugador> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody JugadorRequest request) {
+
+        return ResponseEntity.ok(jugadorService.actualizar(id, request));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(
             @PathVariable Long id) {
@@ -56,5 +65,13 @@ import jakarta.validation.Valid;
         jugadorService.eliminar(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> manejarSolicitudInvalida(
+            IllegalArgumentException excepcion) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(excepcion.getMessage());
     }
 }

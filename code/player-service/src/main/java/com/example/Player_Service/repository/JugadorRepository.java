@@ -13,5 +13,13 @@ public interface JugadorRepository extends JpaRepository<Jugador, Long> {
 
     boolean existsByNickname(String nickname);
 
+    boolean existsByNicknameAndIdNot(String nickname, Long id);
+
     boolean existsByUid(String uid);
+
+    boolean existsByUidAndIdNot(String uid, Long id);
+
+    boolean existsByUsuarioId(Long usuarioId);
+
+    boolean existsByUsuarioIdAndIdNot(Long usuarioId, Long id);
 }

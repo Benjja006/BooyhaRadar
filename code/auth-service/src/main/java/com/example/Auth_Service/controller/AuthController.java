@@ -3,6 +3,7 @@ package com.example.Auth_Service.controller;
 import com.example.Auth_Service.dto.LoginRequest;
 import com.example.Auth_Service.dto.LoginResponse;
 import com.example.Auth_Service.dto.RegistroRequest;
+import com.example.Auth_Service.dto.RegistroResponse;
 import com.example.Auth_Service.model.Usuario;
 import com.example.Auth_Service.service.AuthService;
 
@@ -23,14 +24,16 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Usuario> registrar(
+    public ResponseEntity<RegistroResponse> registrar(
             @Valid @RequestBody RegistroRequest request) {
 
         Usuario usuario = authService.registrar(request);
+        RegistroResponse respuesta = new RegistroResponse(
+                usuario.getId(), usuario.getEmail(), usuario.getRol().name());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(usuario);
+                .body(respuesta);
     }
 
     @PostMapping("/login")

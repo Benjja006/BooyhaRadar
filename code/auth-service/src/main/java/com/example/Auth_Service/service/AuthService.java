@@ -44,7 +44,20 @@ public AuthService(
                 passwordEncoder.encode(request.getPassword())
         );
 
-        usuario.setRol(Rol.PLAYER);
+        Rol rol = Rol.PLAYER;
+        if (request.getRol() != null && !request.getRol().isBlank()) {
+            try {
+                rol = Rol.valueOf(request.getRol().toUpperCase());
+            } catch (IllegalArgumentException excepcion) {
+                throw new IllegalArgumentException("El rol solicitado no es válido");
+            }
+            if (rol == Rol.ADMIN) {
+                throw new IllegalArgumentException(
+                        "No se puede registrar una cuenta administradora");
+            }
+        }
+
+        usuario.setRol(rol);
 
         usuario.setActivo(true);
 
@@ -76,12 +89,14 @@ public AuthService(
         );
     }
     String token = jwtService.generarToken(
+            usuario.getId(),
             usuario.getEmail(),
             usuario.getRol().name()
     );
 
     return new LoginResponse(
             token,
+            usuario.getId(),
             usuario.getEmail(),
             usuario.getRol().name()
     );

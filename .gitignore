@@ -3,4 +3,21 @@
 .env.*
 !.env.example
 !.env.template
-.vscode
+.vscode/
+
+# Archivos generados por Maven y Java
+**/target/
+*.class
+hs_err_pid*
+
+# Registros y archivos temporales
+*.log
+logs/
+*.tmp
+*.swp
+*~
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini

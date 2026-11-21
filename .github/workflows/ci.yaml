@@ -25,8 +25,8 @@ jobs:
             context: ./code/statistics-service
           - service: organization-service
             context: ./code/organization-service
-          - service: scouting-Service
-            context: ./code/scouting-Service
+          - service: scouting-service
+            context: ./code/scouting-service
 
     steps:
       - name: Descargar código
@@ -64,7 +64,7 @@ jobs:
             context: ./code/organization-service
             ecr_variable: ECR_ORGANIZATION_REPOSITORY
           - service: scouting-service
-            context: ./code/scouting-Service
+            context: ./code/scouting-service
             ecr_variable: ECR_SCOUTING_REPOSITORY
 
     steps:

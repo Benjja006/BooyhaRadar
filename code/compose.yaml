@@ -1,5 +1,6 @@
 services:
   auth-service:
+    image: 815649369288.dkr.ecr.us-east-1.amazonaws.com/booyharadar-auth-service:${IMAGE_TAG:-latest}
     build:
       context: ./auth-service
       dockerfile: Dockerfile
@@ -14,6 +15,7 @@ services:
       - backend
 
   player-service:
+    image: 815649369288.dkr.ecr.us-east-1.amazonaws.com/booyharadar-player-service:${IMAGE_TAG:-latest}
     build:
       context: ./player-service
       dockerfile: Dockerfile
@@ -27,6 +29,7 @@ services:
       - backend
 
   statistics-service:
+    image: 815649369288.dkr.ecr.us-east-1.amazonaws.com/booyharadar-statistics-service:${IMAGE_TAG:-latest}
     build:
       context: ./statistics-service
       dockerfile: Dockerfile
@@ -40,6 +43,7 @@ services:
       - backend
 
   organization-service:
+    image: 815649369288.dkr.ecr.us-east-1.amazonaws.com/booyharadar-organization-service:${IMAGE_TAG:-latest}
     build:
       context: ./organization-service
       dockerfile: Dockerfile
@@ -53,6 +57,7 @@ services:
       - backend
 
   scouting-service:
+    image: 815649369288.dkr.ecr.us-east-1.amazonaws.com/booyharadar-scouting-service:${IMAGE_TAG:-latest}
     build:
       context: ./scouting-Service
       dockerfile: Dockerfile

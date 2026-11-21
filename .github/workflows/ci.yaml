@@ -53,19 +53,19 @@ jobs:
         include:
           - service: auth-service
             context: ./code/auth-service
-            ecr_variable: ECR_AUTH_REPOSITORY
+            ecr_secret: ECR_AUTH_REPOSITORY
           - service: player-service
             context: ./code/player-service
-            ecr_variable: ECR_PLAYER_REPOSITORY
+            ecr_secret: ECR_PLAYER_REPOSITORY
           - service: statistics-service
             context: ./code/statistics-service
-            ecr_variable: ECR_STATISTICS_REPOSITORY
+            ecr_secret: ECR_STATISTICS_REPOSITORY
           - service: organization-service
             context: ./code/organization-service
-            ecr_variable: ECR_ORGANIZATION_REPOSITORY
+            ecr_secret: ECR_ORGANIZATION_REPOSITORY
           - service: scouting-service
             context: ./code/scouting-Service
-            ecr_variable: ECR_SCOUTING_REPOSITORY
+            ecr_secret: ECR_SCOUTING_REPOSITORY
 
     steps:
       - name: Descargar código
@@ -77,7 +77,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Iniciar sesión en ECR
         id: login-ecr
@@ -91,4 +91,4 @@ jobs:
         with:
           context: ${{ matrix.context }}
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ vars[matrix.ecr_variable] }}:${{ github.sha }}
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets[matrix.ecr_secret] }}:${{ github.sha }}

@@ -1,0 +1,94 @@
+name: BooyhaRadar CI y ECR
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validar-build:
+    name: Validar ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: auth-service
+            context: ./code/auth-service
+          - service: player-service
+            context: ./code/player-service
+          - service: statistics-service
+            context: ./code/statistics-service
+          - service: organization-service
+            context: ./code/organization-service
+          - service: scouting-Service
+            context: ./code/scouting-Service
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Preparar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construir imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: false
+          tags: booyharadar/${{ matrix.service }}:${{ github.sha }}
+
+  publicar-ecr:
+    name: Publicar ${{ matrix.service }} en ECR
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validar-build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: auth-service
+            context: ./code/auth-service
+            ecr_variable: ECR_AUTH_REPOSITORY
+          - service: player-service
+            context: ./code/player-service
+            ecr_variable: ECR_PLAYER_REPOSITORY
+          - service: statistics-service
+            context: ./code/statistics-service
+            ecr_variable: ECR_STATISTICS_REPOSITORY
+          - service: organization-service
+            context: ./code/organization-service
+            ecr_variable: ECR_ORGANIZATION_REPOSITORY
+          - service: scouting-Service
+            context: ./code/scouting-Service
+            ecr_variable: ECR_SCOUTING_REPOSITORY
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar acceso a AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Iniciar sesión en ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Preparar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construir y publicar imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ vars[matrix.ecr_variable] }}:${{ github.sha }}

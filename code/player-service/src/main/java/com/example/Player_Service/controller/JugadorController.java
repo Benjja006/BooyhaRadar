@@ -41,6 +41,11 @@ import jakarta.validation.Valid;
         return ResponseEntity.ok(jugadorService.listar());
     }
 
+    @GetMapping ("/holaMundo")
+    public String HolaMundo(){
+        return "Hola Mundo";
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Jugador> buscarPorId(
             @PathVariable Long id) {

@@ -1,0 +1,1184 @@
+{
+  "info": {
+    "_postman_id": "7f08be61-7859-4310-ab8d-3ff4c9319cea",
+    "name": "BooyhaRadar - Pruebas AWS",
+    "description": "Colección de pruebas funcionales por microservicio. Ejecuta los cinco servicios y MySQL antes de iniciar. La colección captura IDs de las respuestas y elimina al final los perfiles, estadísticas, organización, favoritos y usuario CRUD que crea. Las dos cuentas registradas para el flujo de prueba permanecen en la base.\n\nPreparación del administrador para probar /usuarios:\n1. Registra una cuenta normal con POST http://98.88.70.172:8081/auth/register usando el correo admin@booyharadar.test y la contraseña AdminTest123!.\n2. En la base booyha_auth, ejecuta: UPDATE usuario SET rol='ADMIN' WHERE email='admin@booyharadar.test';\n3. Deja adminEmail y adminPassword con esos valores en las variables de colección.\n\nEl registro público no permite crear ADMIN. Los requests de /usuarios usan el JWT que obtiene el request de inicio de sesión administrador.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "authBase",
+      "value": "http://54.89.231.76:8081"
+    },
+    {
+      "key": "playerBase",
+      "value": "http://54.88.180.119:8082"
+    },
+    {
+      "key": "statisticsBase",
+      "value": "http://54.88.180.119:8083"
+    },
+    {
+      "key": "organizationBase",
+      "value": "http://54.89.231.76:8084"
+    },
+    {
+      "key": "scoutingBase",
+      "value": "http://54.88.180.119:8085"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@booyharadar.test"
+    },
+    {
+      "key": "adminPassword",
+      "value": "AdminTest123!"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "adminUserId",
+      "value": ""
+    },
+    {
+      "key": "playerEmail",
+      "value": ""
+    },
+    {
+      "key": "playerPassword",
+      "value": ""
+    },
+    {
+      "key": "playerUserId",
+      "value": ""
+    },
+    {
+      "key": "playerToken",
+      "value": ""
+    },
+    {
+      "key": "organizationEmail",
+      "value": ""
+    },
+    {
+      "key": "organizationPassword",
+      "value": ""
+    },
+    {
+      "key": "organizationUserId",
+      "value": ""
+    },
+    {
+      "key": "organizationToken",
+      "value": ""
+    },
+    {
+      "key": "playerId",
+      "value": ""
+    },
+    {
+      "key": "playerNickname",
+      "value": ""
+    },
+    {
+      "key": "playerUid",
+      "value": ""
+    },
+    {
+      "key": "updatedPlayerNickname",
+      "value": ""
+    },
+    {
+      "key": "updatedPlayerUid",
+      "value": ""
+    },
+    {
+      "key": "statisticsId",
+      "value": ""
+    },
+    {
+      "key": "organizationId",
+      "value": ""
+    },
+    {
+      "key": "favoriteId",
+      "value": ""
+    },
+    {
+      "key": "apiUserId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "id": "b00b0000-0000-4000-8000-000000000001",
+      "name": "Auth - Identity Service",
+      "description": "Registro, inicio de sesión y administración de usuarios. Los cuatro requests de /usuarios requieren adminToken.",
+      "item": [
+        {
+          "id": "b00b0000-0000-4000-8000-000000000002",
+          "name": "POST - Registrar jugador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authBase}}/auth/register",
+            "description": "Crea una cuenta de jugador y guarda usuarioId para el perfil.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{playerEmail}}\",\n  \"password\": \"{{playerPassword}}\",\n  \"rol\": \"PLAYER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"playerEmail\", \"player.\" + Date.now() + \"@booyharadar.test\");",
+                  "pm.collectionVariables.set(\"playerPassword\", \"PlayerTest123!\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.rol).to.eql(\"PLAYER\");",
+                  "pm.collectionVariables.set(\"playerUserId\", data.usuarioId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000003",
+          "name": "POST - Iniciar sesión jugador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authBase}}/auth/login",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{playerEmail}}\",\n  \"password\": \"{{playerPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.token).to.be.a('string').and.not.empty;",
+                  "pm.collectionVariables.set(\"playerToken\", data.token);",
+                  "pm.collectionVariables.set(\"playerUserId\", data.usuarioId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000004",
+          "name": "POST - Registrar organización",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authBase}}/auth/register",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{organizationEmail}}\",\n  \"password\": \"{{organizationPassword}}\",\n  \"rol\": \"ORGANIZATION_ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"organizationEmail\", \"organization.\" + Date.now() + \"@booyharadar.test\");",
+                  "pm.collectionVariables.set(\"organizationPassword\", \"OrganizationTest123!\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.rol).to.eql(\"ORGANIZATION_ADMIN\");",
+                  "pm.collectionVariables.set(\"organizationUserId\", data.usuarioId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000005",
+          "name": "POST - Iniciar sesión organización",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authBase}}/auth/login",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{organizationEmail}}\",\n  \"password\": \"{{organizationPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.token).to.be.a('string').and.not.empty;",
+                  "pm.collectionVariables.set(\"organizationToken\", data.token);",
+                  "pm.collectionVariables.set(\"organizationUserId\", data.usuarioId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000006",
+          "name": "POST - Iniciar sesión administrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authBase}}/auth/login",
+            "description": "Requiere una cuenta con rol ADMIN. Sigue los pasos de Preparación del administrador en la descripción de la colección y configura adminEmail/adminPassword.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.token).to.be.a('string').and.not.empty;",
+                  "pm.expect(data.rol).to.eql(\"ADMIN\");",
+                  "pm.collectionVariables.set(\"adminToken\", data.token);",
+                  "pm.collectionVariables.set(\"adminUserId\", data.usuarioId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000007",
+          "name": "POST - Crear usuario (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authBase}}/usuarios",
+            "description": "Este CRUD está protegido: usa el token ADMIN del request anterior.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman.crud.{{$guid}}@booyharadar.test\",\n  \"password\": \"Temporary123!\",\n  \"rol\": \"PLAYER\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.id).to.exist;",
+                  "pm.collectionVariables.set(\"apiUserId\", data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000008",
+          "name": "GET - Listar usuarios (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{authBase}}/usuarios",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json()).to.be.an('array');",
+                  "pm.expect(pm.response.json().some(row => String(row.id) === String(pm.collectionVariables.get('apiUserId')))).to.eql(true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000009",
+          "name": "GET - Obtener usuario (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{authBase}}/usuarios/{{apiUserId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(String(data.id)).to.eql(String(pm.collectionVariables.get('apiUserId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000010",
+          "name": "DELETE - Eliminar usuario (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{authBase}}/usuarios/{{apiUserId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b00b0000-0000-4000-8000-000000000011",
+      "name": "Player Service",
+      "description": "Crear, listar, editar, consultar y eliminar el perfil de jugador. En Collection Runner, el DELETE se ejecuta al final para no romper los tests de estadísticas y favoritos.",
+      "item": [
+        {
+          "id": "b00b0000-0000-4000-8000-000000000012",
+          "name": "POST - Crear jugador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playerBase}}/jugadores",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": \"{{playerUserId}}\",\n  \"nickname\": \"{{playerNickname}}\",\n  \"uid\": \"{{playerUid}}\",\n  \"pais\": \"Chile\",\n  \"fechaNacimiento\": \"2002-04-12\",\n  \"rolPrincipal\": \"Rusher\",\n  \"rolSecundario\": \"Fragger\",\n  \"biografia\": \"Perfil de prueba Postman\",\n  \"experienciaCompetitiva\": \"Regional\",\n  \"logros\": \"Torneo de prueba\",\n  \"contacto\": \"player@booyharadar.test\",\n  \"estadoCompetitivo\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"playerNickname\", \"PostmanPlayer-\" + Date.now());",
+                  "pm.collectionVariables.set(\"playerUid\", String(Math.floor(100000000 + Math.random() * 900000000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.id).to.exist;",
+                  "pm.collectionVariables.set(\"playerId\", data.id);",
+                  "pm.collectionVariables.set(\"playerNickname\", data.nickname);",
+                  "pm.collectionVariables.set(\"playerUid\", data.uid);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000013",
+          "name": "GET - Listar jugadores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{playerBase}}/jugadores",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array');",
+                  "pm.expect(rows.some(row => String(row.id) === String(pm.collectionVariables.get('playerId')))).to.eql(true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000014",
+          "name": "PUT - Actualizar jugador",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playerBase}}/jugadores/{{playerId}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": \"{{playerUserId}}\",\n  \"nickname\": \"{{updatedPlayerNickname}}\",\n  \"uid\": \"{{updatedPlayerUid}}\",\n  \"pais\": \"Chile\",\n  \"fechaNacimiento\": \"2002-04-12\",\n  \"rolPrincipal\": \"Rusher\",\n  \"rolSecundario\": \"Fragger\",\n  \"biografia\": \"Perfil actualizado desde Postman\",\n  \"experienciaCompetitiva\": \"Regional\",\n  \"logros\": \"Torneo de prueba\",\n  \"contacto\": \"player@booyharadar.test\",\n  \"estadoCompetitivo\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"updatedPlayerNickname\", \"PostmanEdit-\" + Date.now());",
+                  "pm.collectionVariables.set(\"updatedPlayerUid\", String(Math.floor(100000000 + Math.random() * 900000000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.nickname).to.eql(pm.collectionVariables.get(\"updatedPlayerNickname\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000015",
+          "name": "GET - Obtener jugador por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{playerBase}}/jugadores/{{playerId}}",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(String(data.id)).to.eql(String(pm.collectionVariables.get('playerId')));",
+                  "pm.execution.setNextRequest(\"POST - Crear estadísticas\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000016",
+          "name": "DELETE - Eliminar jugador",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{playerBase}}/jugadores/{{playerId}}",
+            "description": "El Collection Runner lo reserva para el paso final, después de scouting y favoritos."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });",
+                  "pm.execution.setNextRequest(null);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b00b0000-0000-4000-8000-000000000017",
+      "name": "Statistics Service",
+      "description": "Registrar, consultar, actualizar, ver historial y eliminar estadísticas. El Runner aplaza la eliminación hasta terminar scouting.",
+      "item": [
+        {
+          "id": "b00b0000-0000-4000-8000-000000000018",
+          "name": "POST - Crear estadísticas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{statisticsBase}}/estadisticas",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jugadorId\": \"{{playerId}}\",\n  \"kd\": 4.5,\n  \"danoPromedio\": 620,\n  \"partidasJugadas\": 100,\n  \"kills\": 450\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.id).to.exist;",
+                  "pm.collectionVariables.set(\"statisticsId\", data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000019",
+          "name": "GET - Listar estadísticas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{statisticsBase}}/estadisticas",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array');",
+                  "pm.expect(rows.some(row => String(row.id) === String(pm.collectionVariables.get('statisticsId')))).to.eql(true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000020",
+          "name": "GET - Estadísticas por jugador",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{statisticsBase}}/estadisticas/jugador/{{playerId}}",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array');",
+                  "pm.expect(rows.some(row => String(row.id) === String(pm.collectionVariables.get('statisticsId')))).to.eql(true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000021",
+          "name": "GET - Estadísticas por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{statisticsBase}}/estadisticas/{{statisticsId}}",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(String(data.id)).to.eql(String(pm.collectionVariables.get('statisticsId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000022",
+          "name": "PUT - Actualizar estadísticas",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{statisticsBase}}/estadisticas/jugador/{{playerId}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kd\": 5.2,\n  \"danoPromedio\": 700,\n  \"partidasJugadas\": 120,\n  \"kills\": 620\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.kd).to.eql(5.2);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000023",
+          "name": "GET - Historial de estadísticas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{statisticsBase}}/estadisticas/jugador/{{playerId}}/historial",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array').and.not.empty;",
+                  "pm.execution.setNextRequest(\"POST - Crear organización\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000024",
+          "name": "DELETE - Eliminar estadísticas",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{statisticsBase}}/estadisticas/{{statisticsId}}",
+            "description": "El Collection Runner la ejecuta al final, después de filtros y favoritos."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });",
+                  "pm.execution.setNextRequest(\"DELETE - Eliminar jugador\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b00b0000-0000-4000-8000-000000000025",
+      "name": "Organization Service",
+      "description": "Registrar, consultar, aprobar, actualizar y eliminar organización.",
+      "item": [
+        {
+          "id": "b00b0000-0000-4000-8000-000000000026",
+          "name": "POST - Crear organización",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{organizationBase}}/organizaciones",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Equipo Postman {{$timestamp}}\",\n  \"pais\": \"Chile\",\n  \"descripcion\": \"Organización creada para la colección de pruebas\",\n  \"contacto\": \"{{organizationEmail}}\",\n  \"administradorId\": \"{{organizationUserId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.id).to.exist;",
+                  "pm.expect(data.estadoAprobacion).to.eql(\"PENDIENTE\");",
+                  "pm.collectionVariables.set(\"organizationId\", data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000027",
+          "name": "GET - Obtener organización por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{organizationBase}}/organizaciones/{{organizationId}}",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(String(data.id)).to.eql(String(pm.collectionVariables.get('organizationId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000028",
+          "name": "PATCH - Aprobar organización",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{organizationBase}}/organizaciones/{{organizationId}}/aprobacion?estado=APROBADA",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().estadoAprobacion).to.eql(\"APROBADA\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000029",
+          "name": "GET - Listar organizaciones aprobadas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{organizationBase}}/organizaciones",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array');",
+                  "pm.expect(rows.some(row => String(row.id) === String(pm.collectionVariables.get('organizationId')))).to.eql(true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "4675ac69-3b7f-4d8b-a50c-4fc17cb9f033",
+          "name": "PATCH - Rechazar organización",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{organizationBase}}/organizaciones/{{organizationId}}/aprobacion?estado=RECHAZADA",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().estadoAprobacion).to.eql(\"RECHAZADA\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000030",
+          "name": "PUT - Actualizar organización",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{organizationBase}}/organizaciones/{{organizationId}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Equipo Postman Actualizado\",\n  \"pais\": \"Chile\",\n  \"descripcion\": \"Perfil actualizado desde Postman\",\n  \"contacto\": \"{{organizationEmail}}\",\n  \"administradorId\": \"{{organizationUserId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.estadoAprobacion).to.eql(\"PENDIENTE\");",
+                  "pm.expect(data.nombre).to.eql(\"Equipo Postman Actualizado\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000031",
+          "name": "DELETE - Eliminar organización",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{organizationBase}}/organizaciones/{{organizationId}}",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b00b0000-0000-4000-8000-000000000032",
+      "name": "Scouting Service",
+      "description": "Buscar jugadores con filtros y gestionar favoritos. La limpieza de estadísticas y jugador se ejecuta tras eliminar el favorito.",
+      "item": [
+        {
+          "id": "b00b0000-0000-4000-8000-000000000033",
+          "name": "GET - Buscar jugadores por filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{scoutingBase}}/scouting/jugadores?pais=Chile&edadMinima=18&edadMaxima=30&rol=Rusher&experiencia=Regional&kdMinimo=3&danoMinimo=500&partidasMinimas=20",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array');",
+                  "pm.expect(rows.some(row => String(row.id) === String(pm.collectionVariables.get('playerId')))).to.eql(true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000034",
+          "name": "POST - Agregar favorito",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{scoutingBase}}/favoritos/{{organizationUserId}}/{{playerId}}",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "pm.expect(data.id).to.exist;",
+                  "pm.collectionVariables.set(\"favoriteId\", data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000035",
+          "name": "GET - Listar favoritos de usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{scoutingBase}}/favoritos/{{organizationUserId}}",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array');",
+                  "pm.expect(rows.some(row => String(row.id) === String(pm.collectionVariables.get('favoriteId')))).to.eql(true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "b00b0000-0000-4000-8000-000000000036",
+          "name": "DELETE - Eliminar favorito",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{scoutingBase}}/favoritos/{{organizationUserId}}/{{playerId}}",
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });",
+                  "pm.execution.setNextRequest(\"DELETE - Eliminar estadísticas\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
